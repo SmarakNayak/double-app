@@ -12,6 +12,7 @@ A minimal Expo app with EAS build support, PostgreSQL db, and Foundry for Solidi
 ```bash
 nix develop
 ```
+> **Note:** First run may take ~1 hour as Foundry builds from source. Subsequent runs are instant.
 
 2. Install dependencies:
 ```bash
