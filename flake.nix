@@ -38,6 +38,14 @@
               echo "  1. npm install (or bun install)"
               echo "  2. npx expo start"
               echo "  3. eas build (for cloud builds)"
+
+              # Launch the shell you were actually using
+              parent_shell=$(ps -p $PPID -o comm= 2>/dev/null || echo "unknown")
+              if echo "$parent_shell" | grep -q "fish"; then
+                exec fish
+              elif echo "$parent_shell" | grep -q "zsh"; then
+                exec zsh
+              fi
             '';
           };
         });
