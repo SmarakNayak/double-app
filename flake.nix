@@ -23,6 +23,7 @@
               pkgs.bun
               pkgs.git
               pkgs.postgresql_18
+              pkgs.android-tools
               ethereum.packages.${system}.foundry
             ];
 
