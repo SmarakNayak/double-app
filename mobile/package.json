@@ -4,8 +4,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "android:tunnel": "expo start --android --tunnel",
+    "android": "./scripts/ensure-avd.sh && expo start --android",
+    "android:tunnel": "./scripts/ensure-avd.sh && expo start --android --tunnel",
     "ios": "expo start --ios",
     "ios:tunnel": "expo start --ios --tunnel",
     "web": "expo start --web"
