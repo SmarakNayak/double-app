@@ -1,0 +1,234 @@
+
+Spec: Farcaster Actions
+Goals
+Actions let developers create custom buttons which users can install into their action bar on any Farcaster application. Our goals are: 
+
+Extend casts with custom “cast actions”
+Reuse concepts from the existing frames standard where possible
+Keep it simple
+Proposal
+Actions should appear alongside the common cast actions. 
+When a user clicks an action, a message is sent to the action server. 
+The action server responds with a short text message which is shown to the user. 
+
+
+The mocks below show how Warpcast plans to implement the action button. Initially, only one action will be supported though we will add ways for people to add multiple buttons. 
+
+1. Adding actions
+Actions are added when a user clicks on a deeplink. The link contains a name, icon, action type and post url, which is all the information a client needs to add the action. 
+
+Deep link format v1 [Deprecated]
+We’ve introduced a new format for install URLs. Retrieving metadata from a URL is easier to extend, cross-client compatible, and easy to add to <meta> tags in the future.
+
+See Deep link format v2 below for details.
+Here’s what an example link might look like: 
+https://warpcast.com/~/add-cast-action?postUrl=https%3A%2F%2Fcastactions.xyz%2Fremind&name=Remind%20me%20in%2010%20days&actionType=post&icon=light-bulb
+
+When a user enables a cast action, clients should:
+Load the URL and parse its query parameters for:
+name: The action name. Must be less than 30 characters.
+icon: see Valid Icons 
+actionType : The action type. (Same type options as frame buttons). Only post is accepted in V1.
+postUrl: The action URL. Must be https protocol.
+Validate and save the discovered action.
+Allow the user to remove unwanted or unused actions.
+Deep link format v2
+The only query parameter for the v2 link format is the action url. Clients will GET this URL to retrieve action metadata.
+
+Here’s what a link looks like in this format: 
+https://warpcast.com/~/add-cast-action?url=https%3A%2F%2Fcastactions.xyz%2Fremind
+
+When a user enables a cast action, clients should:
+Load the URL and parse its query parameters for:
+url: The action URL. Must have https protocol.
+GET the action URL to retrieve action metadata. The action must return an HTTP 200 OK with a JSON body in the following format:
+type ActionDefinition = {
+  name: string; // An action name up to 30 characters.
+  icon: string; // An icon ID. See "Valid Icons"
+  description: string; // A short description up to 80 characters.
+  // Optional external link to an "about" page. 
+  // You should only include this if you can't fully describe your 
+  // action using the description field.
+  // Must be http or https protocol.
+  aboutUrl?: string;
+  action: {
+    type: 'post'
+  }
+}
+​
+
+For example:
+
+{
+  "name": "Remind me in 10 days",
+  "icon": "lightbulb",
+  "description": "Get an automatic reminder from @remindbot in 10 days."
+  "aboutUrl": "https://castactions.xyz/remind/about",
+  "action": {
+    "type": "post"
+   }
+}
+​
+Clients will retrieve and update this metadata on install and should:
+Validate and sanitize all data
+Save the discovered action on behalf of the user.
+Update metadata for existing saved actions.
+Allow the user to remove unwanted or unused actions.
+Clients should also show a confirmation screen which gives the user more context about what the action does. It should also warn the user if installing this action will replace a previous action. 
+
+Warpcast plans to support installing one action at a time, though we have plans to support multiple actions in the near future. 
+
+2. Displaying actions
+
+Actions should appear alongside a cast and can be clicked/tapped by the user. 
+
+
+3. Clicking actions
+When an action is clicked a post request is sent to the action server’s postUrl , which was specified in the installation deeplink. 
+
+The request body is a frame message where: 
+the frame_url is set to the cast action postUrl
+the button_index is 1 
+the cast_id is the id of the cast that was clicked on. 
+4. Displaying responses 
+An action server can send a short text response back to clients. 
+A post url may respond with a message and a status code of 200 OK response or 4xx. 
+The body must contain a {"message": "..."} JSON body, similar to frame error messages.
+Messages must be less than 30 characters
+Clients will show this message  to users
+The screen below shows how warpcast plans to implement the validation messages. 
+
+FAQ
+Can a user have multiple cast actions?
+A user may have up to five cast actions in Warpcast. 
+Can an action respond by redirecting the user in the app?
+We plan to allow actions to respond with a frame, which will let you build more interesting applications. 
+Where can I test actions?
+You can test an action at https://warpcast.com/~/developers/cast-actions.
+Valid Icons
+number
+search
+image
+alert
+code
+meter
+ruby
+video
+filter
+stop
+plus
+info
+check
+book
+question
+mail
+home
+star
+inbox
+lock
+eye
+heart
+unlock
+play
+tag
+calendar
+database
+hourglass
+key
+gift
+sync
+archive
+bell
+bookmark
+briefcase
+bug
+clock
+credit-card
+globe
+infinity
+light-bulb
+location
+megaphone
+moon
+note
+pencil
+pin
+quote
+reply
+rocket
+shield
+stopwatch
+tools
+trash
+comment
+gear
+file
+hash
+square
+sun
+zap
+sign-out
+sign-in
+paste
+mortar-board
+history
+plug
+bell-slash
+diamond
+id-badge
+person
+smiley
+pulse
+beaker
+flame
+people
+person-add
+broadcast
+graph
+shield-check
+shield-lock
+telescope
+webhook
+accessibility
+report
+verified
+blocked
+bookmark-slash
+checklist
+circle-slash
+cross-reference
+dependabot
+device-camera
+device-camera-video
+device-desktop
+device-mobile
+dot
+eye-closed
+iterations
+key-asterisk
+law
+link-external
+list-ordered
+list-unordered
+log
+mention
+milestone
+mute
+no-entry
+north-star
+organization
+paintbrush
+paper-airplane
+project
+shield-x
+skip
+squirrel
+stack
+tasklist
+thumbsdown
+thumbsup
+typography
+unmute
+workflow
+versions
+
